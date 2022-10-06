@@ -1,0 +1,34 @@
+spring:
+  mustache:
+    expose-request_attributes: true
+  freemarker:
+    expose-request-attributes: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      show-sql: true
+    show-sql: false
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/db_example
+    username: springuser
+    password: 11afamet
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    initialization-mode: always
+
+  mail:
+    host: smtp.yandex.ru
+    username: egornesobaka@yandex.ru
+    password: yjdpuigtrtophlif
+    port: 465
+    protocol: smtps
+
+upload:
+  path: /home/egor/Документы/java/uploads
+
+mail:
+  debug: true
+
+
+
