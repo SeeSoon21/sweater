@@ -1,12 +1,11 @@
 package com.example.sweater.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
 
 @Data
 @NoArgsConstructor
@@ -20,6 +19,8 @@ public class Message {
     @JoinColumn(name = "user_id")
     private User author;
 
+    @NotBlank(message = "Please, fill the text area!")
+    @Length(max = 2048, message = "Message to long(more than 2kB)!")
     private String text;
     private String tag;
     private String filename;

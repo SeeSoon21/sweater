@@ -9,15 +9,18 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Controller
 @Slf4j
@@ -52,36 +55,46 @@ public class MainController {
     @PostMapping("/main")
     public String add(
             @AuthenticationPrincipal User user,
-            @RequestParam String text,
-            @RequestParam String tag, Model model,
+            @Valid Message message,
+            BindingResult bindingResult,
+            Model model,
             @RequestParam("file") MultipartFile file
             ) throws IOException {
 
-        Message message = new Message(text, tag, user);
-        System.out.println("путь для загрузки:" + uploadPath);
-        //getOriginalFilename.isEmpty - если имя файла не пустое(чтоб когда юзер ничего не загружал ничего бы и не отправлялось)
-        if (file != null && !file.getOriginalFilename().isEmpty()) {
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdir();
+        message.setAuthor(user);
+
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errorsMap = ControllerUtils.getErrors(bindingResult);
+
+            //merge - отображаем все ошибки
+            model.addAttribute("textError", errorsMap);
+            model.addAttribute("message", message);
+        } else {
+            //getOriginalFilename.isEmpty - если имя файла не пустое(чтоб когда юзер ничего не загружал ничего бы и не отправлялось)
+            if (file != null && !file.getOriginalFilename().isEmpty()) {
+                File uploadDir = new File(uploadPath);
+                if (!uploadDir.exists()) {
+                    uploadDir.mkdir();
+                }
+
+                //обезопасим себя от коллизий и создадим uuid
+                String uuidFile = UUID.randomUUID().toString();
+                String resultFilename = uuidFile + "." + file.getOriginalFilename();
+
+                //загружаем пользовательский файл(не раздаем)
+                file.transferTo(new File(uploadPath + "/" + resultFilename));
+
+                message.setFilename(resultFilename);
             }
-
-            //обезопасим себя от коллизий и создадим uuid
-            String uuidFile = UUID.randomUUID().toString();
-            String resultFilename = uuidFile + "." + file.getOriginalFilename();
-            System.out.println("Полное имя файла: " + resultFilename);
-
-            //загружаем пользовательский файл(не раздаем)
-            file.transferTo(new File(uploadPath + "/" + resultFilename));
-
-            message.setFilename(resultFilename);
+            //чтобы после добавления сообщения форма стала пустой
+            model.addAttribute("message", null);
+            messageRepo.save(message);
         }
-        messageRepo.save(message);
-        log.info(message.toString());
 
         Iterable<Message> messages = messageRepo.findAll();
         model.addAttribute("messages", messages);
 
         return "main";
+
     }
 }

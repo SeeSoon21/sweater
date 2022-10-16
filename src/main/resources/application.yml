@@ -24,11 +24,21 @@ spring:
     port: 465
     protocol: smtps
 
+  session:
+    jdbc:
+      initialize-schema: always
+      table-name: SPRING_SESSION
+
 upload:
-  path: /home/egor/Документы/java/uploads
+  path: /home/egor/uploads
 
 mail:
-  debug: true
+  debug: false
+
+recaptcha:
+  secret: 6LcGCHEiAAAAAPQcACh974IgYmGBBe7z0xZHdV7t
+
+hostname: 46.138.31.158
 
 
 

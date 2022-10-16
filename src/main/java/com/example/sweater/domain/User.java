@@ -5,6 +5,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.Set;
 
@@ -15,10 +18,16 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+    @NotBlank(message = "Username cannot be empty!")
     private String username;
+    @NotBlank(message = "Password cannot be empty!")
+    @Size(min=5, max=20)
     private String password;
+
     private boolean active;
 
+    @Email(message = "email is not correct!")
+    @NotBlank(message = "Email cannot be empty!")
     private String email;
     private String activationCode;
 
@@ -26,6 +35,9 @@ public class User implements UserDetails {
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
     private Set<Role> roles;
+
+    @OneToMany
+    private Set<Message> messages;
 
     public boolean isAdmin() {
         return roles.contains(Role.ADMIN);
